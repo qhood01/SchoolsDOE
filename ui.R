@@ -1,3 +1,4 @@
+library(leaflet)
 vars <- c("Asian %", "Black %", "Hispanic %", "White %", "Students with Disabilities %", "English Language Learners %", "Poverty %")
 
 fluidPage(
