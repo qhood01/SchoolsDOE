@@ -5,15 +5,18 @@ library(leaflet)
 library(htmlwidgets)
 library(ggplot2)
 library(scales)
+library(RColorBrewer)
 
 
 ## Todo
-## Radio Button with elementary, middle, high -- new variable
+## Dynamic Sizing
 ## Markers for each school
 ## Zoom when click on district
-## District 10 appears twice
 map <- readOGR(dsn="./nysd_18b",layer="nysd")
 map <- spTransform(map, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+map <- map[-33,]
+schools <- read.csv("./schoolDemos.csv")
+districts <- read.csv("./districtDemos.csv")
 
 districts.to.boro <- as.data.frame(table(substr(schools$DBN,1,2),substr(schools$DBN,3,3)))
 districts.to.boro <- districts.to.boro[which(districts.to.boro$Freq > 0),]
@@ -31,15 +34,19 @@ boro.colors <- data.frame("Borough"=unique(districts.to.boro[["Borough"]]),"Colo
 districts.to.boro <- join(districts.to.boro,boro.colors)
 map@data <- join(map@data,districts.to.boro)
 
-schools <- read.csv("./schoolDemos.csv")
+
+names(schools) <- gsub("X","",gsub("[.]","",gsub("1", " %", names(schools))))
+names(schools)[c(34,36)] <- c("Students with Disabilities %", "English Language Learners %")
+names(districts) <- gsub("X","",gsub("[.]","",gsub("1", " %", names(districts))))
+names(districts)[c(34,36)] <- c("Students with Disabilities %", "English Language Learners %")
 schools$SchoolDist <- as.numeric(substr(schools$DBN,1,2))
-schools$elementary <- ifelse(schools$Grade.1 > 0,1,0)
-schools$middle <- ifelse(schools$Grade.6 > 0,1,0)
-schools$high <- ifelse(schools$Grade.9 > 0,1,0)
+schools$elementary <- ifelse(schools$GradeK > 0,1,0)
+schools$middle <- ifelse(schools$Grade6 > 0,1,0)
+schools$high <- ifelse(schools$Grade9 > 0,1,0)
 schools.16 <- schools[which(schools$Year == "2015-16"),]
 
-districts <- read.csv("./districtDemos.csv")
 districts.16 <- districts[which(districts$Year == "2015-16"),]
+
 
 function(input, output) {
 
@@ -64,7 +71,6 @@ function(input, output) {
     })
 
     output$plot=renderPlot({
-
         if (!is.null(click$id)) {
             id <- click$id
             df <- schools.16[which(schools.16$SchoolDist == id),]
@@ -75,11 +81,11 @@ function(input, output) {
             }
             boro <- as.character(map@data$Borough[which(map@data$SchoolDist == click$id)])
             c <- as.character(map@data$Color[which(map@data$SchoolDist == click$id)])
-            df <- df[order(df$X..Poverty.1),]
-            distPov <- districts.16[which(districts.16$District == id),"X..Poverty.1"]
+            df <- df[order(df[[input$var]]),]
+            distPov <- 100*districts.16[which(districts.16$District == id),input$var]
             par(bg="#F5F5F5")
-            dotchart(x=df$X..Poverty.1,labels=df$School.Name,xlab="Percent",pch=20,
-                     color=c,pt.cex=2,main=paste0(boro," District ", id, "\nPercentage of Students in Poverty by School"))
+            dotchart(x=100*df[[input$var]],labels=df$SchoolName,xlab="Percent",pch=20,
+                     color=c,pt.cex=2,main=paste0(boro," District ", id, "\nPercentage of Students by School in 2015-16"))
             abline(v=distPov)
         }
     })
