@@ -1,0 +1,7 @@
+fluidPage(
+    br(),
+    column(6,leafletOutput("map", height="750px")),
+    column(6,radioButtons("level","School Level", c("Elementary","Middle","High")),
+           plotOutput("plot", height="800px")),
+    br()
+)

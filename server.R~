@@ -1,0 +1,69 @@
+library(plyr)
+library(dplyr)
+library(rgdal)
+library(leaflet)
+library(htmlwidgets)
+
+
+## Todo
+## Radio Button with elementary, middle, high -- new variable
+## Markers for each school
+## Zoom when click on district
+## District 10 appears twice
+map <- readOGR(dsn="./nysd_18b",layer="nysd")
+map <- spTransform(map, CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+districts.to.boro <- as.data.frame(table(substr(schools$DBN,1,2),substr(schools$DBN,3,3)))
+districts.to.boro <- districts.to.boro[which(districts.to.boro$Freq > 0),]
+districts.remove <- c("75","79","84")
+districts.to.boro <- districts.to.boro[which(!districts.to.boro$Var1%in%districts.remove),]
+districts.to.boro$Borough <- NA
+districts.to.boro$Borough[which(districts.to.boro$Var2 == "K")] <- "Brooklyn"
+districts.to.boro$Borough[which(districts.to.boro$Var2 == "M")] <- "Manhattan"
+districts.to.boro$Borough[which(districts.to.boro$Var2 == "Q")] <- "Queens"
+districts.to.boro$Borough[which(districts.to.boro$Var2 == "R")] <- "Staten Island"
+districts.to.boro$Borough[which(districts.to.boro$Var2 == "X")] <- "Bronx"
+districts.to.boro <- districts.to.boro[,c("Var1","Borough")]
+names(districts.to.boro)[1] <- "SchoolDist"
+boro.colors <- data.frame("Borough"=unique(districts.to.boro[["Borough"]]),"Color"=brewer.pal(5,"Dark2"))
+districts.to.boro <- join(districts.to.boro,boro.colors)
+map@data <- join(map@data,districts.to.boro)
+
+schools <- read.csv("./schoolDemos.csv")
+schools$SchoolDist <- as.numeric(substr(schools$DBN,1,2))
+schools.16 <- schools[which(schools$Year == "2015-16"),]
+
+function(input, output) {
+
+    output$map <- renderLeaflet({
+        leaflet(map) %>%
+            setView(lng=-74.006,lat=40.7128,zoom=11) %>%
+            addTiles() %>%
+            addPolygons(layerId=~SchoolDist,
+                        color="black",
+                        weight=2,
+                        smoothFactor=0.5,
+                        fillColor=~Color,
+                        fillOpacity=0.5,
+                        highlightOptions=highlightOptions(color = "white", weight = 3,
+                                                          bringToFront = TRUE))
+    })
+
+    click <- reactiveValues(id=NULL)
+
+    observeEvent(input$map_shape_click,{
+        click$id <- input$map_shape_click$id
+    })
+
+    output$plot=renderPlot({
+        print(class(click$id))
+        if (!is.null(click$id)) {
+            id <- click$id
+            df <- schools.16[which(schools.16$SchoolDist == id),]
+            df <- df[order(df$X..Poverty.1),]
+            dotchart(x=df$X..Poverty.1,labels=df$School.Name)
+        }
+    })
+
+}
+
