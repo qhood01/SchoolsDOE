@@ -6,9 +6,14 @@ fluidPage(
     fluidRow(column(6, align="center",
                     h4("Select a School District"))),
     fluidRow(column(6,leafletOutput("map")),
-             column(6,radioButtons("level","School Level", c("Elementary","Middle"),inline=T),
-                    selectizeInput("var","Select a Variable",vars,selected="Poverty %"),
-                    plotOutput("plot")),
-             tags$head(tags$style("#plot{height:75vh !important;}")),
-             tags$head(tags$style("#map{height:94vh !important;}")))
+             column(3,align="center",
+                    radioButtons("level","School Level", c("Elementary","Middle"),inline=T)),
+             column(3,align="center",
+                    selectizeInput("var","Select a Variable",vars,selected="Poverty %")),
+             column(6, tabsetPanel(type="tabs",
+                                   tabPanel("Plot", plotOutput("plot")),
+                                   tabPanel("Table", DT::dataTableOutput("table"))))),
+    tags$head(tags$style("#map{height:94vh !important;}")),
+    tags$head(tags$style("#plot{height:75vh !important;}")),
+    tags$head(tags$style("#table{height:75vh !important;}"))
 )
