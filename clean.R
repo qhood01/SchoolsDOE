@@ -11,8 +11,8 @@ library(DT)
 map <- readOGR(dsn="./nysd_18b",layer="nysd")
 map <- spTransform(map, CRS("+proj=longlat +datum=WGS84 +no_defs"))
 map <- map[-33,]
-schools <- read.csv("./schoolDemos.csv")
-districts <- read.csv("./districtDemos.csv")
+schools <- read.csv("./schools.csv")
+districts <- read.csv("./districts.csv")
 
 districts.to.boro <- as.data.frame(table(substr(schools$DBN,1,2),substr(schools$DBN,3,3)))
 districts.to.boro <- districts.to.boro[which(districts.to.boro$Freq > 0),]
@@ -31,19 +31,21 @@ districts.to.boro <- join(districts.to.boro,boro.colors)
 map@data <- join(map@data,districts.to.boro)
 writeOGR(map,"./districts_geojson",layer="",driver="GeoJSON")
 
-names(schools) <- gsub("X","",gsub("[.]","",gsub("1", " %", names(schools))))
-names(schools)[c(34,36)] <- c("Students with Disabilities %", "English Language Learners %")
-names(districts) <- gsub("X","",gsub("[.]","",gsub("1", " %", names(districts))))
-names(districts)[c(34,36)] <- c("Students with Disabilities %", "English Language Learners %")
+names(schools) <- gsub("[.]"," ",gsub("X..","",gsub(".1", " %", names(schools))))
+names(schools)[38] <- "Free or Reduced Lunch %"
+
+names(districts) <- gsub("[.]"," ",gsub("X..","",gsub(".1", " %", names(districts))))
+names(districts)[c(1,37)] <- c("District","Free or Reduced Lunch %")
+
 schools$SchoolDist <- as.numeric(substr(schools$DBN,1,2))
-schools$elementary <- ifelse(schools$GradeK > 0,1,0)
-schools$middle <- ifelse(schools$Grade6 > 0,1,0)
-schools$high <- ifelse(schools$Grade9 > 0,1,0)
+schools$elementary <- ifelse(schools[["Grade K"]] > 0,1,0)
+schools$middle <- ifelse(schools[["Grade 6"]] > 0,1,0)
+schools$high <- ifelse(schools[["Grade 9"]] > 0,1,0)
 
-districtVars <- c("District", "Asian %", "Black %", "Hispanic %", "White %", "Students with Disabilities %", "English Language Learners %", "Poverty %")
-districts.16 <- districts[which(districts$Year == "2015-16"),districtVars]
-saveRDS(districts.16,"districts.16.rds")
+districtVars <- c("District", "Asian %", "Black %", "Hispanic %", "White %", "Students with Disabilities %", "English Language Learners %", "Free or Reduced Lunch %", "Economic Need Index")
+districts.18 <- districts[which(districts$Year == "2017-18"),districtVars]
+saveRDS(districts.18,"districts.18.rds")
 
-schoolVars <- c("SchoolName", "SchoolDist", "elementary", "middle", "high", "TotalEnrollment", "Asian %", "Black %", "Hispanic %", "White %", "Students with Disabilities %", "English Language Learners %", "Poverty %")
-schools.16 <- schools[which(schools$Year == "2015-16"),schoolVars]
-saveRDS(schools.16,"schools.16.rds")
+schoolVars <- c("School Name", "SchoolDist", "elementary", "middle", "high", "Total Enrollment", "Asian %", "Black %", "Hispanic %", "White %", "Students with Disabilities %", "English Language Learners %", "Free or Reduced Lunch %", "Economic Need Index")
+schools.18 <- schools[which(schools$Year == "2017-18"),schoolVars]
+saveRDS(schools.18,"schools.18.rds")

@@ -9,8 +9,8 @@ library(RColorBrewer)
 library(DT)
 
 map <- readOGR(dsn="./districts_geojson")
-schools.16 <- readRDS("./schools.16.rds")
-districts.16 <- readRDS("./districts.16.rds")
+schools.16 <- readRDS("./schools.18.rds")
+districts.16 <- readRDS("./districts.18.rds")
 ## Todo
 ## Dynamic Sizing
 ## Markers for each school
@@ -52,8 +52,8 @@ function(input, output) {
             df <- df[order(df[[input$var]]),]
             distPov <- 100*districts.16[which(districts.16$District == id),input$var]
             par(bg="#F5F5F5")
-            dotchart(x=100*df[[input$var]],labels=substr(df$SchoolName,1,20),xlab="Percent",
-                     pch=20,color=c,pt.cex=2,main=paste0(boro," District ", id, "\nPercentage of Students by School in 2015-16"))
+            dotchart(x=100*df[[input$var]],labels=substr(df[["School Name"]],1,20),xlab="Percent",
+                     pch=20,color=c,pt.cex=2,main=paste0(boro," District ", id, "\nPercentage of Students by School in 2017-18"))
             abline(v=distPov)
         }
     })
@@ -67,9 +67,9 @@ function(input, output) {
             } else if (input$level == "Middle") {
                 df <- df[which(df$middle == 1),]
             }
-            schools <- df$SchoolName
+            schools <- df[["School Name"]]
             boro <- as.character(map@data$Borough[which(map@data$SchoolDist == click$id)])
-            df <- df[order(df[[input$var]]),c("SchoolName",input$var,"TotalEnrollment")]
+            df <- df[order(df[[input$var]]),c("SchoolName",input$var,"Total Enrollment")]
             df[[input$var]] <- round(100*df[[input$var]],2)
             names(df) <- c("School", input$var, "Enrollment")
             return(df)

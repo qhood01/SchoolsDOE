@@ -1,5 +1,5 @@
 library(leaflet)
-vars <- c("Asian %", "Black %", "Hispanic %", "White %", "Students with Disabilities %", "English Language Learners %", "Poverty %")
+vars <- c("Asian %", "Black %", "Hispanic %", "White %", "Students with Disabilities %", "English Language Learners %", "Free or Reduced Lunch %", "Economic Need Index")
 
 fluidPage(
 
@@ -9,7 +9,7 @@ fluidPage(
              column(3,align="center",
                     radioButtons("level","School Level", c("Elementary","Middle"),inline=T)),
              column(3,align="center",
-                    selectizeInput("var","Select a Variable",vars,selected="Poverty %")),
+                    selectizeInput("var","Select a Variable",vars,selected="Free or Reduced Lunch %")),
              column(6, tabsetPanel(type="tabs",
                                    tabPanel("Plot", plotOutput("plot")),
                                    tabPanel("Table", DT::dataTableOutput("table"))))),
