@@ -69,7 +69,7 @@ function(input, output) {
             }
             schools <- df[["School Name"]]
             boro <- as.character(map@data$Borough[which(map@data$SchoolDist == click$id)])
-            df <- df[order(df[[input$var]]),c("SchoolName",input$var,"Total Enrollment")]
+            df <- df[order(df[[input$var]]),c("School Name",input$var,"Total Enrollment")]
             df[[input$var]] <- round(100*df[[input$var]],2)
             names(df) <- c("School", input$var, "Enrollment")
             return(df)
