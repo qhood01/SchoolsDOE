@@ -12,7 +12,10 @@ fluidPage(
                     selectizeInput("var","Select a Variable",vars,selected="Free or Reduced Lunch %")),
              column(6, tabsetPanel(type="tabs",
                                    tabPanel("Plot", plotOutput("plot")),
-                                   tabPanel("Table", DT::dataTableOutput("table"))))),
+                                   tabPanel("Table", DT::dataTableOutput("table")))),
+             column(6, align="left",
+                    a(href="http://schools.nyc.gov/Accountability/data/default.htm",
+                      "Data Source: New York City Department of Education",target="_blank"))),
     tags$head(tags$style("#map{height:94vh !important;}")),
     tags$head(tags$style("#plot{height:75vh !important;}")),
     tags$head(tags$style("#table{height:75vh !important;}"))
